@@ -1,0 +1,15 @@
+name: random_forest_project
+
+conda_env: conda.yaml
+
+entry_points:
+  main:
+    parameters:
+      data_path: {type: string, default: namadataset_preprocessing/final_data_preprocessed.csv}
+      experiment_name: {type: string, default: mlproject_random_forest}
+      tracking_uri: {type: string, default: ''}
+    command: >
+      python modelling.py
+      --data-path {data_path}
+      --experiment-name {experiment_name}
+      --tracking-uri {tracking_uri}
