@@ -54,21 +54,26 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
+      - name: Sanitize repository name
+        id: sanitize_repo
+        run: |
+          REPO_LOWER=$(echo "${DOCKERHUB_REPOSITORY}" | tr '[:upper:]' '[:lower:]')
+          echo "repo_lower=${REPO_LOWER}" >> "$GITHUB_OUTPUT"
+        env:
+          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
       - name: Build Docker image with MLflow
         run: |
           python build_docker_image.py \
             --experiment-name ci_random_forest \
-            --image-name "${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG}" \
+            --image-name "${{ steps.sanitize_repo.outputs.repo_lower }}:${DOCKER_IMAGE_TAG}" \
             --tracking-uri "file:${{ github.workspace }}/MLProject/mlruns" \
             --model-artifact model
-        env:
-          DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
 
       - name: Push Docker image
         run: |
-          docker push "${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG}"
-          docker tag "${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG}" "${DOCKERHUB_REPOSITORY}:latest"
-          docker push "${DOCKERHUB_REPOSITORY}:latest"
+          docker push "${{ steps.sanitize_repo.outputs.repo_lower }}:${DOCKER_IMAGE_TAG}"
+          docker tag "${{ steps.sanitize_repo.outputs.repo_lower }}:${DOCKER_IMAGE_TAG}" "${{ steps.sanitize_repo.outputs.repo_lower }}:latest"
+          docker push "${{ steps.sanitize_repo.outputs.repo_lower }}:latest"
         env:
           DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
 
