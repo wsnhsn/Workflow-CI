@@ -10,6 +10,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
+from contextlib import nullcontext
 
 import mlflow
 import mlflow.sklearn
@@ -49,7 +50,9 @@ def train(X: pd.DataFrame, y: pd.Series, experiment: str, tracking_uri: str | No
         n_jobs=-1,
     )
 
-    with mlflow.start_run():
+    run_context = mlflow.start_run if mlflow.active_run() is None else nullcontext
+
+    with run_context():
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
 
