@@ -1,2 +1,1 @@
-Isi file ini dengan tautan publik Docker Hub yang menyimpan image hasil workflow.
-url repository dockerhub: https://hub.docker.com/repository/docker/wsnh/eksperimen-sml/general
+https://hub.docker.com/r/wsnh/eksperimen-sml
