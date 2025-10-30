@@ -1,3 +1,2 @@
 Isi file ini dengan tautan publik Docker Hub yang menyimpan image hasil workflow.
-Gunakan nama repositori yang sama dengan rahasia `DOCKERHUB_REPOSITORY`.
-Contoh format: https://hub.docker.com/r/username/eksperimen-sml
+url repository dockerhub: https://hub.docker.com/repository/docker/wsnh/eksperimen-sml/general
