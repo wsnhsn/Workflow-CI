@@ -9,8 +9,9 @@ melalui `mlflow run`.
 from __future__ import annotations
 
 import argparse
-from pathlib import Path
+import os
 from contextlib import contextmanager
+from pathlib import Path
 
 import mlflow
 import mlflow.sklearn
@@ -35,20 +36,26 @@ def load_dataset(csv_path: Path) -> tuple[pd.DataFrame, pd.Series]:
 
 @contextmanager
 def _mlflow_run_scope():
-    """Pastikan ada run MLflow aktif; gunakan nested run jika parent sudah ada."""
-    if mlflow.active_run() is None:
-        with mlflow.start_run():
+    """Pastikan ada run MLflow aktif; gunakan run existing bila disediakan MLflow Projects."""
+    if mlflow.active_run() is not None:
+        yield
+        return
+
+    existing_run_id = os.getenv("MLFLOW_RUN_ID")
+    if existing_run_id:
+        with mlflow.start_run(run_id=existing_run_id):
             yield
-    else:
-        with mlflow.start_run(nested=True):
-            yield
+        return
+
+    with mlflow.start_run():
+        yield
 
 
 def train(X: pd.DataFrame, y: pd.Series, experiment: str, tracking_uri: str | None) -> None:
     """Melatih RandomForest dan mencatat artefak ke MLflow."""
     if tracking_uri:
         mlflow.set_tracking_uri(tracking_uri)
-    if mlflow.active_run() is None:
+    if mlflow.active_run() is None and not os.getenv("MLFLOW_RUN_ID"):
         mlflow.set_experiment(experiment)
 
     X_train, X_test, y_train, y_test = train_test_split(
