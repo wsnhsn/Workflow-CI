@@ -10,7 +10,7 @@ from __future__ import annotations
 
 import argparse
 from pathlib import Path
-from contextlib import nullcontext
+from contextlib import contextmanager
 
 import mlflow
 import mlflow.sklearn
@@ -33,11 +33,23 @@ def load_dataset(csv_path: Path) -> tuple[pd.DataFrame, pd.Series]:
     return X, y
 
 
+@contextmanager
+def _mlflow_run_scope():
+    """Pastikan ada run MLflow aktif; gunakan nested run jika parent sudah ada."""
+    if mlflow.active_run() is None:
+        with mlflow.start_run():
+            yield
+    else:
+        with mlflow.start_run(nested=True):
+            yield
+
+
 def train(X: pd.DataFrame, y: pd.Series, experiment: str, tracking_uri: str | None) -> None:
     """Melatih RandomForest dan mencatat artefak ke MLflow."""
     if tracking_uri:
         mlflow.set_tracking_uri(tracking_uri)
-    mlflow.set_experiment(experiment)
+    if mlflow.active_run() is None:
+        mlflow.set_experiment(experiment)
 
     X_train, X_test, y_train, y_test = train_test_split(
         X, y, test_size=0.2, random_state=42, stratify=y
@@ -50,9 +62,7 @@ def train(X: pd.DataFrame, y: pd.Series, experiment: str, tracking_uri: str | No
         n_jobs=-1,
     )
 
-    run_context = mlflow.start_run if mlflow.active_run() is None else nullcontext
-
-    with run_context():
+    with _mlflow_run_scope():
         model.fit(X_train, y_train)
         y_pred = model.predict(X_test)
 
