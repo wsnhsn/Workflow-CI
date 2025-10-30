@@ -3,7 +3,9 @@ name: mlflow-retrain
 on:
   push:
     paths:
-      - 'Workflow-CI/**'
+      - '.workflow/**'
+      - 'MLProject/**'
+      - '.github/workflows/**'
   workflow_dispatch:
 
 jobs:
@@ -11,7 +13,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Workflow-CI/MLProject
+        working-directory: MLProject
     env:
       DOCKER_IMAGE_TAG: ${{ github.sha }}
 
@@ -31,7 +33,7 @@ jobs:
 
       - name: Run MLflow Project
         env:
-          MLFLOW_HOME: ${{ github.workspace }}/Workflow-CI/MLProject
+          MLFLOW_HOME: ${{ github.workspace }}/MLProject
         run: |
           mlflow run . --env-manager=local --experiment-name ci_random_forest
 
@@ -57,7 +59,7 @@ jobs:
           python build_docker_image.py \
             --experiment-name ci_random_forest \
             --image-name "${DOCKERHUB_REPOSITORY}:${DOCKER_IMAGE_TAG}" \
-            --tracking-uri "file:${{ github.workspace }}/Workflow-CI/MLProject/mlruns" \
+            --tracking-uri "file:${{ github.workspace }}/MLProject/mlruns" \
             --model-artifact model
         env:
           DOCKERHUB_REPOSITORY: ${{ secrets.DOCKERHUB_REPOSITORY }}
@@ -78,5 +80,5 @@ jobs:
         uses: actions/upload-artifact@v4
         with:
           name: mlflow-runs
-          path: Workflow-CI/MLProject/mlruns.tar.gz
+          path: MLProject/mlruns.tar.gz
           if-no-files-found: warn
