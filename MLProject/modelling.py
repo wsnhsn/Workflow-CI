@@ -24,6 +24,7 @@ from sklearn.model_selection import train_test_split
 TARGET_COL = "burns_calories_bin"
 BASE_DIR = Path(__file__).resolve().parent
 DEFAULT_DATA_PATH = BASE_DIR / "namadataset_preprocessing/final_data_preprocessed.csv"
+DEFAULT_TRACKING_URI = "file:" + str((BASE_DIR / "mlruns").resolve())
 
 
 def load_dataset(csv_path: Path) -> tuple[pd.DataFrame, pd.Series]:
@@ -34,14 +35,28 @@ def load_dataset(csv_path: Path) -> tuple[pd.DataFrame, pd.Series]:
     return X, y
 
 
+def _clean_tracking_uri(raw: str | None) -> str | None:
+    if raw is None:
+        return None
+    cleaned = raw.strip().strip('"').strip("'")
+    return cleaned or None
+
+
 @contextmanager
 def _mlflow_run_scope():
-    """Pastikan ada run MLflow aktif; gunakan run existing bila disediakan MLflow Projects."""
-    if mlflow.active_run() is not None:
-        yield
+    """
+    Pastikan ada run MLflow aktif.
+
+    - Jika sudah ada run aktif (mis. dipicu MLflow Projects), gunakan nested run.
+    - Jika belum ada, mulai run baru.
+    """
+    active = mlflow.active_run()
+    if active is not None:
+        with mlflow.start_run(nested=True):
+            yield
         return
 
-    existing_run_id = os.getenv("MLFLOW_RUN_ID")
+    existing_run_id = _clean_tracking_uri(os.getenv("MLFLOW_RUN_ID"))
     if existing_run_id:
         with mlflow.start_run(run_id=existing_run_id):
             yield
@@ -53,9 +68,14 @@ def _mlflow_run_scope():
 
 def train(X: pd.DataFrame, y: pd.Series, experiment: str, tracking_uri: str | None) -> None:
     """Melatih RandomForest dan mencatat artefak ke MLflow."""
-    if tracking_uri:
-        mlflow.set_tracking_uri(tracking_uri)
-    if mlflow.active_run() is None and not os.getenv("MLFLOW_RUN_ID"):
+    cleaned_tracking_uri = _clean_tracking_uri(tracking_uri)
+    if cleaned_tracking_uri:
+        mlflow.set_tracking_uri(cleaned_tracking_uri)
+    else:
+        mlflow.set_tracking_uri(DEFAULT_TRACKING_URI)
+
+    existing_run_id = _clean_tracking_uri(os.getenv("MLFLOW_RUN_ID"))
+    if mlflow.active_run() is None and not existing_run_id:
         mlflow.set_experiment(experiment)
 
     X_train, X_test, y_train, y_test = train_test_split(

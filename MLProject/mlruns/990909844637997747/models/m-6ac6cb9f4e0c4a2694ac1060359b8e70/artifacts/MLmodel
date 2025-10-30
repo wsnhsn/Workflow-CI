@@ -1,0 +1,22 @@
+artifact_path: file:///C:/Users/MyBook%20Hype%20AMD/Flutter%20Project/dicoding/Dicoding%20Mentor/Workflow-CI/MLProject/mlruns/990909844637997747/models/m-6ac6cb9f4e0c4a2694ac1060359b8e70/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.pkl
+    predict_fn: predict
+    python_version: 3.11.9
+  sklearn:
+    code: null
+    pickled_model: model.pkl
+    serialization_format: cloudpickle
+    sklearn_version: 1.7.2
+mlflow_version: 3.5.1
+model_id: m-6ac6cb9f4e0c4a2694ac1060359b8e70
+model_size_bytes: 42906669
+model_uuid: m-6ac6cb9f4e0c4a2694ac1060359b8e70
+prompts: null
+run_id: 52df14bf29bb4fd39d795baea4f4a320
+utc_time_created: '2025-10-30 03:16:40.466946'

@@ -1,0 +1,10 @@
+artifact_location: file:///C:/Users/MyBook%20Hype%20AMD/Flutter%20Project/dicoding/Dicoding%20Mentor/Workflow-CI/MLProject/mlruns/990909844637997747/models/m-6ac6cb9f4e0c4a2694ac1060359b8e70/artifacts
+creation_timestamp: 1761794200218
+experiment_id: '990909844637997747'
+last_updated_timestamp: 1761794227898
+model_id: m-6ac6cb9f4e0c4a2694ac1060359b8e70
+model_type: null
+name: model
+source_run_id: 52df14bf29bb4fd39d795baea4f4a320
+status: 2
+status_message: null
